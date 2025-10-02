@@ -8,24 +8,48 @@ import java.lang.Exception
 private const val NOTE_COLLECTION = "notes"
 
 class RemoteDataSource private constructor(
-
+    private val database: FirebaseFirestore
 ) {
 
     suspend fun addNote(title: String, description: String): Result<String> {
-      return TODO()
+        return TODO()
     }
 
     suspend fun getNotes(): Result<List<NoteData>> {
-       return TODO()
+        return try {
+            //Snapshot query
+            val querySnapshot = database.collection(NOTE_COLLECTION).get().await()
+
+            //get notes
+            val notesFromRemote = querySnapshot.documents.mapNotNull { noteFromDb ->
+                noteFromDb.toObject(NoteRemoteData::class.java)?.copy(id = noteFromDb.id)
+            }
+
+            val notesData: MutableList<NoteData> = mutableListOf()
+            notesFromRemote.forEach { note ->
+                if (note.id != null && note.title != null && note.description != null) {
+                    notesData.add(
+                        NoteData(
+                            key = note.id,
+                            title = note.title,
+                            description = note.description
+                        )
+                    )
+                }
+            }
+            Result.success(notesData)
+        } catch (ex: Exception) {
+            Result.failure(ex)
+        }
     }
 
     suspend fun deleteNote(id: String): Result<Unit> {
-      return TODO()
+        return TODO()
     }
 
     companion object {
         fun create(): RemoteDataSource {
-            return RemoteDataSource()
+            return RemoteDataSource(database = FirebaseFirestore.getInstance())
         }
     }
 }
