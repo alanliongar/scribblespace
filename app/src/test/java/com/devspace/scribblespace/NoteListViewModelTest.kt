@@ -3,6 +3,7 @@ package com.devspace.scribblespace
 import app.cash.turbine.test
 import com.devspace.scribblespace.common.model.NoteData
 import com.devspace.scribblespace.list.data.NoteRepository
+import com.devspace.scribblespace.list.presentation.NoteListUiState
 import com.devspace.scribblespace.list.presentation.NoteListViewModel
 import com.devspace.scribblespace.list.presentation.ui.NoteUiData
 import com.nhaarman.mockitokotlin2.doReturn
@@ -38,7 +39,7 @@ class NoteListViewModelTest {
             //When
             underTest.uiNotes.test {
                 assert(
-                    emptyList<NoteData>() == awaitItem()
+                    NoteListUiState.Empty == awaitItem()
                 )
             }
         }
@@ -60,13 +61,16 @@ class NoteListViewModelTest {
 
             //When
             underTest.uiNotes.test {
-                val expected = listOf(
-                    NoteUiData(
-                        id = "key1",
-                        title = "title1",
-                        description = "description1"
+                val expected =
+                    NoteListUiState.Data(
+                        listOf(
+                            NoteUiData(
+                                id = "key1",
+                                title = "title1",
+                                description = "description1"
+                            )
+                        )
                     )
-                )
                 assert(
                     expected == awaitItem()
                 )
